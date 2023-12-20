@@ -10,9 +10,7 @@ together.api_key = API_KEY
 def run_llm(prompt, answers=None, model="mistralai/Mixtral-8x7B-Instruct-v0.1"):
   prompt = "[INST]" + prompt + "[/INST]"
 
-  if DEBUG:
-    print(colored(f"\n\nDEBUG: Prompt:", "yellow"))
-    print(colored(prompt, "yellow"))
+  if DEBUG >= 2: print(colored(f"Prompt: ", "yellow") + colored(prompt, "black"))
 
   if LOCAL:
     if answers is not None:
@@ -21,7 +19,7 @@ def run_llm(prompt, answers=None, model="mistralai/Mixtral-8x7B-Instruct-v0.1"):
       ret = "Hmm, I don't know without internet..."
   else:
     good_reply = False
-    for _ in 5:
+    for _ in range(5):
       out = together.Complete.create(
         prompt=prompt,
         model=model,
@@ -35,10 +33,9 @@ def run_llm(prompt, answers=None, model="mistralai/Mixtral-8x7B-Instruct-v0.1"):
       if answers is None or ret.lower() in [a.lower() for a in answers]:
         good_reply = True
         break
-      if DEBUG: print(colored(f"\n\nDEBUG: Returned '{ret}', which is not a possible answer. Retrying...", "yellow"))
+      if DEBUG >= 2: print(colored(f"Returned '{ret}', which is not a possible answer. Retrying...", "red"))
     assert good_reply, "Didn't get one of the expected answers"
 
-  if DEBUG: print(colored(f"\n\nDEBUG: Prompt:", "yellow"))
-
+  if DEBUG >= 2: print(colored(f"Reply: ", "yellow") + colored(ret, "black"))
   return ret
 

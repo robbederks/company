@@ -3,27 +3,37 @@
 from dataclasses import dataclass
 
 from llm import run_llm
-from helpers import colored
+from helpers import colored, DEBUG
 from company import Company
 
 @dataclass
-class Action:
-  name: str
+class _Action:
   binary_prompt: str
 
-  def prompt(self):
-    output = run_llm(f"{self.binary_prompt} Answer with one word: YES or NO")
+  @classmethod
+  def _ask(cls, agent, meeting, question, answers=None) -> str:
+    if DEBUG == 1: print(colored(f"Question for {agent.name}: ", "yellow") + colored(question, "black"), end=" ")
+    ret = run_llm(f"{agent.pre_prompt}{meeting.story()}\n{question}", answers=answers)
+    if DEBUG == 1: print(colored(ret, "cyan"))
+    return ret
 
-  def follow_up(self):
-    pass
+  @classmethod
+  def follow_up(cls, agent, meeting) -> None: pass
 
-class Speak(Action):
-  name = "SPEAK"
-  binary_prompt = "Based on this conversation, do you want to say something constructive?"
+  @classmethod
+  def run(cls, agent, meeting) -> None:
+    output = cls._ask(agent, meeting, f"{cls.binary_prompt} Answer with one word: YES or NO", answers=['YES', 'NO'])
+    if output.lower() == "yes":
+      cls.follow_up(agent, meeting)
 
-  def follow_up(self):
-    pass
+class Speak(_Action):
+  binary_prompt="Based on this conversation, do you want to say something constructive?"
 
+  @classmethod
+  def follow_up(cls, agent, meeting):
+    output = cls._ask(agent, meeting, "What do you want to say? Be concise.")
+    print(colored(f"{agent.name} ({agent.role}) SPEAKS: ", "green") + colored(output, "red"))
+    meeting.conversation.append(f"{agent.name}: {output}")
 
 class Agent:
   def __init__(self, name, public_backstory, private_backstory, role, actions=None):
@@ -31,16 +41,13 @@ class Agent:
     assert '\n' not in public_backstory, "The public backstory needs to be concise, and a single line"
     self.public_backstory = public_backstory
     self.private_backstory = private_backstory
-    self.actions = actions
+    self.actions = actions if actions is not None else [Speak]
     self.role = role
 
     self.pre_prompt = f"You are {self.name}, an employee at {Company.name} with the role of {self.role}. Your backstory is:\n  {self.public_backstory}\n"
     self.pre_prompt += f"Other facts about you are:{self.private_backstory}"
 
-    if self.actions is not None:
-      self.pre_prompt += f"\nYou have the following special actions available:\n - " + '\n - '.join(self.actions) + "\n"
-
-  def run(self, meeting_description, conversation):
-    output = run_llm(self.pre_prompt + '\n' + meeting_description + '\n' + '\n'.join(conversation) + f"\n{self.name}: ")
-    print(colored(f"{self.name}: ", "green") + colored(output, "red"))
-    conversation.append(f"{self.name}: {output}")
+  def run(self, meeting):
+    for action in self.actions:
+      action.run(self, meeting)
+    if DEBUG == 1: print()

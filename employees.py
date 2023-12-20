@@ -11,7 +11,7 @@ jonh = Agent(
   His decisions are based on first principles and whatever is best for the long term gain of the company.
   Scrutinizes every purchase and is very frugal.
 """,
-  role='CEO and Founder',
+  role='Founder',
 )
 
 samira = Agent(
