@@ -3,8 +3,9 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from agent import Agent
 from about_us import company_story
+from agent import Agent
+from company import Company
 from helpers import colored
 
 @dataclass
@@ -12,9 +13,10 @@ class Meeting:
   goal: str
   participants: List[Agent]
   secretary: Agent
+  company: Company
 
   def __post_init__(self) -> None:
-    self.conversation: List[str] = []
+    self.transcript: List[str] = []
     self.finished: bool = False
     self.summary: Optional[str] = None
 
@@ -24,8 +26,8 @@ class Meeting:
     for participant in self.participants:
       s += f" - {participant.name} ({participant.role}): {participant.public_backstory}\n"
     s += f"\n{self.secretary.name} is the secretary for this meeting."
-    s += f"\nThe goal for this meeting is: {self.goal} This is the current conversation:\n\n  "
-    s += '\n  '.join(self.conversation) + '\n'
+    s += f"\nThe goal for this meeting is: {self.goal} This is the current transcript:\n\n  "
+    s += '\n  '.join(self.transcript) + '\n'
     return s
 
   def run(self):

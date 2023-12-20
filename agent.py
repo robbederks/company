@@ -27,13 +27,13 @@ class _Action:
       cls.follow_up(agent, meeting)
 
 class Speak(_Action):
-  binary_prompt="Based on this conversation, do you want to say something constructive?"
+  binary_prompt="Based on this transcript, do you want to say something constructive?"
 
   @classmethod
   def follow_up(cls, agent, meeting):
     output = cls._ask(agent, meeting, "What do you want to say? Be concise.")
     print(colored(f"{agent.name} ({agent.role}) SPEAKS: ", "green") + colored(output, "red"))
-    meeting.conversation.append(f"{agent.name}: {output}")
+    meeting.transcript.append(f"{agent.name} SPEAKS: {output}")
 
 class EndMeeting(_Action):
   binary_prompt="Have all goals for the meeting been resolved, meaning that the meeting can be ended?"
@@ -42,6 +42,27 @@ class EndMeeting(_Action):
   def follow_up(cls, agent, meeting):
     meeting.summary = cls._ask(agent, meeting, "Summarize the most important facts from this meeting. Be as concise as possible.")
     meeting.finished = True
+
+class ScheduleMeeting(_Action):
+  binary_prompt="Are there any questions / concerns that have been brought up that are out-of-scope for this meeting?"
+
+  @classmethod
+  def follow_up(cls, agent, meeting) -> None:
+    meeting_goal = cls._ask(agent, meeting, "Generate a concise meeting goal to address any question / concern that has been brought up.")
+    # TODO: figure out who to include in the meeting participants
+    # TODO: is this meeting already planned?
+    print(colored(f"{agent.name} ({agent.role}) SCHEDULES MEETING: ", "green") + meeting_goal)
+    meeting.transcript.append(f"{agent.name} SCHEDULES MEETING: {meeting_goal}")
+
+    from meeting import Meeting
+    meeting.company.meetings.append(
+      Meeting(
+        goal=meeting_goal,
+        participants=meeting.participants,
+        secretary=meeting.secretary,
+        company=meeting.company
+      )
+    )
 
 @dataclass
 class Agent:

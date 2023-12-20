@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # thanks to GPT-4 for the names
 
-from agent import Agent, Speak, EndMeeting
+from agent import Agent, Speak, EndMeeting, ScheduleMeeting
 
 company_name = "Argus, Inc."
 company_story = f"""
@@ -22,7 +22,7 @@ jonh = Agent(
   His decisions are based on first principles and whatever is best for the long term gain of the company.
   Scrutinizes every purchase and is very frugal.
 """,
-  actions=[Speak],
+  actions=[Speak, ScheduleMeeting],
 )
 
 samira = Agent(
@@ -85,7 +85,7 @@ emily = Agent(
   She is responsible for writing the meeting notes based on the conversation between the present employees.
   The meeting notes need to contain all the important decisions made during the meeting.
   """,
-  actions=[Speak, EndMeeting]
+  actions=[Speak, EndMeeting, ScheduleMeeting]
 )
 
 employees = [jonh, samira, lee, gabriel, yuna, emily]
