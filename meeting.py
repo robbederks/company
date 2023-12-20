@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 
+from dataclasses import dataclass
+from typing import List, Optional
+
+from agent import Agent
+from about_us import company_story
 from helpers import colored
 
-from company import Company
-from employees import employees, emily
-
+@dataclass
 class Meeting:
-  def __init__(self, goal, participants, secretary=emily):
-    self.goal = goal
-    self.participants = participants
-    self.secretary = secretary
-    self.conversation = []
-    self.finished = False
-    self.summary = None
+  goal: str
+  participants: List[Agent]
+  secretary: Agent
 
-  def story(self):
-    s = Company.story
+  def __post_init__(self) -> None:
+    self.conversation: List[str] = []
+    self.finished: bool = False
+    self.summary: Optional[str] = None
+
+  def story(self) -> str:
+    s = company_story
     s += "\nYou are in a meeting with the following participants:\n"
     for participant in self.participants:
       s += f" - {participant.name} ({participant.role}): {participant.public_backstory}\n"
@@ -33,11 +37,4 @@ class Meeting:
         if self.finished: break
 
     print(colored("Meeting ended! Summary: ", "cyan") + '\n' + self.summary)
-
-if __name__ == "__main__":
-  meeting = Meeting(
-    goal="First monday meeting, all-hands. This is the first week of the company, we need to lay out a roadmap and come up with a plan for what everyone will be working on this sprint.",
-    participants=employees,
-  )
-  meeting.run()
 

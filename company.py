@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
 
+from typing import List
+
+from meeting import Meeting
+from about_us import employees, emily
+from helpers import DEBUG, colored
+
 class Company:
-  name = "Argus, Inc."
-  story = f"""
-{name} is a SF startup that is building a web app to unify different security cameras, like Wyze, Nest, Ring, Blink, ... .
-This is done by developing a minimal custom firmware for each camera type that is easy to install and that streams the video to a central server.
-The server then uses state-of-the-art machine learning to detect and classify interesting events.
-The app then allows the user to view the events and manage the cameras. Footage can be stored for a subscription fee.
+  def __init__(self) -> None:
+    self.meetings: List[Meeting] = [
+      Meeting(
+        goal="First monday meeting, all-hands. This is the first week of the company, we need to lay out a roadmap and come up with a plan for what everyone will be working on this sprint.",
+        participants=employees,
+        secretary=emily,
+      )
+    ]
 
-Every word in every meeting costs the company money. As a result, employees are encouraged to be as concise as possible, if not, they will be fired.
-"""
+  def run(self):
+    for m in self.meetings:
+      m.run()
 
+if __name__ == "__main__":
+  Company().run()

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from dataclasses import dataclass
+from typing import List, Optional
 
 from llm import run_llm
 from helpers import colored, DEBUG
-from company import Company
 
 @dataclass
 class _Action:
@@ -43,16 +43,19 @@ class EndMeeting(_Action):
     meeting.summary = cls._ask(agent, meeting, "Summarize the most important facts from this meeting. Be as concise as possible.")
     meeting.finished = True
 
+@dataclass
 class Agent:
-  def __init__(self, name, public_backstory, private_backstory, role, actions=None):
-    self.name = name
-    assert '\n' not in public_backstory, "The public backstory needs to be concise, and a single line"
-    self.public_backstory = public_backstory
-    self.private_backstory = private_backstory
-    self.actions = actions if actions is not None else [Speak]
-    self.role = role
+  name: str
+  role: str
+  company_name: str
+  public_backstory: str
+  private_backstory: str
+  actions: List[_Action]
 
-    self.pre_prompt = f"You are {self.name}, an employee at {Company.name} with the role of {self.role}. Your backstory is:\n  {self.public_backstory}\n"
+  def __post_init__(self) -> None:
+    assert '\n' not in self.public_backstory, "The public backstory needs to be concise, and a single line"
+
+    self.pre_prompt = f"You are {self.name}, an employee at {self.company_name} with the role of {self.role}. Your backstory is:\n  {self.public_backstory}\n"
     self.pre_prompt += f"Other facts about you are:{self.private_backstory}"
 
   def run(self, meeting):
