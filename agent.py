@@ -1,45 +1,46 @@
 #!/usr/bin/env python3
 
-import together
-from secret import API_KEY
-together.api_key = API_KEY
+from dataclasses import dataclass
 
+from llm import run_llm
+from helpers import colored
 from company import Company
-from helpers import colored, DEBUG
+
+@dataclass
+class Action:
+  name: str
+  binary_prompt: str
+
+  def prompt(self):
+    output = run_llm(f"{self.binary_prompt} Answer with one word: YES or NO")
+
+  def follow_up(self):
+    pass
+
+class Speak(Action):
+  name = "SPEAK"
+  binary_prompt = "Based on this conversation, do you want to say something constructive?"
+
+  def follow_up(self):
+    pass
+
 
 class Agent:
-  def __init__(self, name, backstory, role, actions=None, model="mistralai/Mixtral-8x7B-Instruct-v0.1"):
+  def __init__(self, name, public_backstory, private_backstory, role, actions=None):
     self.name = name
-    self.backstory = backstory
-    # TODO: make better
-    self.short_backstory = backstory.replace('\n', ' ')
+    assert '\n' not in public_backstory, "The public backstory needs to be concise, and a single line"
+    self.public_backstory = public_backstory
+    self.private_backstory = private_backstory
     self.actions = actions
     self.role = role
-    self.model = model
 
-    self.pre_prompt = f"[INST] You are {self.name}, an employee at {Company.name} with the role of {self.role}. Your backstory is:\n  {self.backstory}"
+    self.pre_prompt = f"You are {self.name}, an employee at {Company.name} with the role of {self.role}. Your backstory is:\n  {self.public_backstory}\n"
+    self.pre_prompt += f"Other facts about you are:{self.private_backstory}"
 
     if self.actions is not None:
       self.pre_prompt += f"\nYou have the following special actions available:\n - " + '\n - '.join(self.actions) + "\n"
 
-  def run(self, conversation):
-    conversation += f"\n{self.name}: [/INST]"
-
-    prompt = self.pre_prompt + conversation
-    if DEBUG:
-      print(colored(f"\n\nDEBUG: {self.name} Prompt:", "yellow"))
-      print(colored(prompt, "yellow"))
-
-    print(colored(f"\n{self.name}: ", "green"), end="")
-    ret = together.Complete.create(
-      prompt=prompt,
-      model=self.model,
-      max_tokens=200,
-      temperature=0.7,
-      repetition_penalty=1.2,
-      stop=["\n", "[INST]"],
-    )
-    output = ret['output']['choices'][0]['text'].strip()
-    print(colored(output, "red"), end="")
-    conversation += output
-    return conversation.replace("[/INST]", "")
+  def run(self, meeting_description, conversation):
+    output = run_llm(self.pre_prompt + '\n' + meeting_description + '\n' + '\n'.join(conversation) + f"\n{self.name}: ")
+    print(colored(f"{self.name}: ", "green") + colored(output, "red"))
+    conversation.append(f"{self.name}: {output}")

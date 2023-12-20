@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from helpers import colored
+
 from company import Company
 from employees import employees, emily
 
@@ -9,28 +11,29 @@ class Meeting:
     self.participants = participants
     self.secretary = secretary
 
-    self.pre_prompt = Company.story
+    self.meeting_story = Company.story
 
-    self.pre_prompt += "\n\nYou are in a meeting with the following participants:\n"
+    self.meeting_story += "\nYou are in a meeting with the following participants:\n"
     for participant in self.participants:
-      self.pre_prompt += f" - {participant.name} ({participant.role}): {participant.short_backstory}\n"
-    self.pre_prompt += f"\n{self.secretary.name} is the secretary for this meeting."
-    self.pre_prompt += f"\nThe goal for this meeting is: {self.goal}"
-    self.pre_prompt += f"\nIf your name is called, it's your turn to speak. This is the current conversation:"
+      self.meeting_story += f" - {participant.name} ({participant.role}): {participant.public_backstory}\n"
+    self.meeting_story += f"\n{self.secretary.name} is the secretary for this meeting."
+    self.meeting_story += f"\nThe goal for this meeting is: {self.goal}"
+    self.meeting_story += f"\n\nIf your name is called, it's your turn to speak. This is the current conversation:"
 
-    self.conversation = self.pre_prompt + "\n\n"
+    self.conversation = []
 
-  def run_step(self):
+  def run(self):
+    print(colored("Meeting goal: ", "cyan") + self.goal)
+
     for participant in self.participants:
-      self.conversation = participant.run(self.conversation)
-    # self.conversation = self.secretary.run(self.conversation)
+      participant.run(self.meeting_story, self.conversation)
+
+    print(colored("Meeting ended!", "cyan"))
 
 if __name__ == "__main__":
   meeting = Meeting(
     goal="First monday meeting, all-hands. This is the first week of the company, we need to lay out a roadmap and come up with a plan for what everyone will be working on this sprint.",
     participants=employees,
   )
-
-  for _ in range(3):
-    meeting.run_step()
+  meeting.run()
 
