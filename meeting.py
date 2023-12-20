@@ -11,6 +11,8 @@ class Meeting:
     self.participants = participants
     self.secretary = secretary
     self.conversation = []
+    self.finished = False
+    self.summary = None
 
   def story(self):
     s = Company.story
@@ -25,10 +27,12 @@ class Meeting:
   def run(self):
     print(colored("Meeting goal: ", "cyan") + self.goal)
 
-    for participant in self.participants:
-      participant.run(meeting=self)
+    while not self.finished:
+      for participant in self.participants:
+        participant.run(meeting=self)
+        if self.finished: break
 
-    print(colored("Meeting ended!", "cyan"))
+    print(colored("Meeting ended! Summary: ", "cyan") + '\n' + self.summary)
 
 if __name__ == "__main__":
   meeting = Meeting(

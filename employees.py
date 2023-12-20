@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # thanks to GPT-4 for the names
 
-from agent import Agent
+from agent import Agent, Speak, EndMeeting
 
 jonh = Agent(
   name='John',
@@ -65,6 +65,7 @@ emily = Agent(
   The meeting notes need to contain all the important decisions made during the meeting.
   """,
   role='Secretary',
+  actions=[Speak, EndMeeting]
 )
 
 employees = [jonh, samira, lee, gabriel, yuna, emily]

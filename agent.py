@@ -35,6 +35,14 @@ class Speak(_Action):
     print(colored(f"{agent.name} ({agent.role}) SPEAKS: ", "green") + colored(output, "red"))
     meeting.conversation.append(f"{agent.name}: {output}")
 
+class EndMeeting(_Action):
+  binary_prompt="Have all goals for the meeting been resolved, meaning that the meeting can be ended?"
+
+  @classmethod
+  def follow_up(cls, agent, meeting):
+    meeting.summary = cls._ask(agent, meeting, "Summarize the most important facts from this meeting. Be as concise as possible.")
+    meeting.finished = True
+
 class Agent:
   def __init__(self, name, public_backstory, private_backstory, role, actions=None):
     self.name = name
