@@ -31,11 +31,11 @@ class _Action:
       cls.follow_up(agent, meeting)
 
 class Speak(_Action):
-  binary_prompt="Based on this transcript, do you want to say something constructive?"
+  binary_prompt="Based on this transcript, do you want to say something constructive, ask/answer a question?"
 
   @classmethod
   def follow_up(cls, agent, meeting):
-    output = cls._ask(agent, meeting, f"What do you want to say? Be concise.\n\n{agent.name}: ")
+    output = cls._ask(agent, meeting, f"You want to say something constructive, or ask/answer a question. What do you want to say (only speak for yourself)? Be concise.\n\n{agent.name}: ")
     print(colored(f"{agent.name} ({agent.role}) SPEAKS: ", "green") + colored(output, "red"))
     meeting.transcript.append(f"{agent.name} SPEAKS: {output}")
 
@@ -44,11 +44,22 @@ class EndMeeting(_Action):
 
   @classmethod
   def follow_up(cls, agent, meeting):
-    meeting.summary = cls._ask(agent, meeting, "Summarize the most important facts from this meeting. Be as concise as possible.")
+    meeting.summary = cls._ask(agent, meeting, """Summarize the most important facts from this meeting. Be as concise as possible.
+The general layout of this summary should be:
+  Meeting goal: <meeting goal>
+  Tasks to be performed this sprint:
+    - <Person 1>: <task 1>
+    - <Person 2>: <task 2>
+    - ...
+  Important decisions made:
+    - <decision 1>
+    - <decision 2>
+    - ...
+""")
     meeting.finished = True
 
 class ScheduleMeeting(_Action):
-  binary_prompt="Are there any questions / concerns that have been brought up that are out-of-scope for this meeting?"
+  binary_prompt="Are there any questions / concerns that have been brought up that are out-of-scope for this meeting, or is there another need to schedule a follow-up meeting?"
 
   @classmethod
   def follow_up(cls, agent, meeting) -> None:
