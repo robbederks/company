@@ -18,12 +18,16 @@ class _Action:
     return ret
 
   @classmethod
+  def _ask_binary(cls, agent, meeting, question) -> str:
+    question += " Answer with one word, and that word only: YES or NO. If you're unsure, answer NO."
+    return cls._ask(agent, meeting, question, answers=['YES', 'NO']) == "YES"
+
+  @classmethod
   def follow_up(cls, agent, meeting) -> None: pass
 
   @classmethod
   def run(cls, agent, meeting) -> None:
-    output = cls._ask(agent, meeting, f"{cls.binary_prompt} Answer with one word: YES or NO", answers=['YES', 'NO'])
-    if output.lower() == "yes":
+    if cls._ask_binary(agent, meeting, cls.binary_prompt):
       cls.follow_up(agent, meeting)
 
 class Speak(_Action):
@@ -31,7 +35,7 @@ class Speak(_Action):
 
   @classmethod
   def follow_up(cls, agent, meeting):
-    output = cls._ask(agent, meeting, "What do you want to say? Be concise.")
+    output = cls._ask(agent, meeting, f"What do you want to say? Be concise.\n\n{agent.name}: ")
     print(colored(f"{agent.name} ({agent.role}) SPEAKS: ", "green") + colored(output, "red"))
     meeting.transcript.append(f"{agent.name} SPEAKS: {output}")
 

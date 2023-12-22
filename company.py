@@ -21,6 +21,7 @@ class Company:
     count = 0
     for m in self.meetings:
       m.run()
+      # TODO: sensible limit
       if (count := count + 1) > 100:
         print("MAX AMOUNT OF MEETINGS REACHED!")
         break
